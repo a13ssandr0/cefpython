@@ -45,3 +45,20 @@ def parse_header(header_file):
 def read():
     """Version dict for the current platform's header."""
     return parse_header(header_path())
+
+
+def dynamic_metadata(field, settings):
+    """scikit-build-core dynamic-metadata provider for [project.version].
+
+    Registered via [tool.scikit-build.metadata.version] (provider="cef_version",
+    provider-path="tools") in pyproject.toml. Reuses read() so the wheel
+    version always matches the CEF major version CMakeLists.txt builds
+    against for this platform, instead of duplicating the header lookup.
+    """
+    if field != "version":
+        msg = "cef_version provider only supports the 'version' field, got {!r}".format(field)
+        raise ValueError(msg)
+    if settings:
+        msg = "cef_version version provider takes no settings, got {!r}".format(settings)
+        raise ValueError(msg)
+    return "{}.0".format(read()["CHROME_VERSION_MAJOR"])

@@ -46,3 +46,10 @@ Download = "https://github.com/cztomczak/cefpython/releases"
 [tool.scikit-build]
 cmake.build-type = "Release"
 wheel.packages = ["cefpython3"]
+# required for tool.scikit-build.metadata.* to use a provider that isn't
+# built into scikit-build-core (cef_version, below)
+experimental = true
+
+[tool.scikit-build.metadata.version]
+provider = "cef_version"
+provider-path = "tools"
