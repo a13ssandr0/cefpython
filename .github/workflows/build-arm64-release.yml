@@ -1,0 +1,208 @@
+name: Build ARM64 Wheels & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v147.0.0)'
+        required: true
+        default: 'v147.0.0'
+      bypass_cache:
+        description: 'Bypass CEF download cache'
+        type: boolean
+        default: false
+
+jobs:
+  # ── Stage 1: download CEF once, cache across build matrix ──────────────────
+  download-cef:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    outputs:
+      cef-version: ${{ steps.cef-version.outputs.value }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Read CEF version
+        id: cef-version
+        run: |
+          ver=$(grep -oP '(?<=#define CEF_VERSION ")[^"]+' src/version/cef_version_linuxarm64.h)
+          echo "value=$ver" >> $GITHUB_OUTPUT
+          echo "CEF version: $ver"
+
+      - name: Cache CEF binaries
+        uses: actions/cache@v4
+        if: ${{ inputs.bypass_cache != true }}
+        with:
+          path: |
+            build/cef_binary_*
+            build/cef*_linuxarm64
+          key: cef-linuxarm64-${{ steps.cef-version.outputs.value }}
+
+      - name: Install Python dependencies
+        run: python tools/requirements.py
+
+      - name: Download CEF from Spotify CDN (~765 MB)
+        run: python3 tools/download_cef.py
+
+  # ── Stage 2: build wheel for each Python version ───────────────────────────
+  build:
+    needs: download-cef
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - name: Restore CEF cache
+        uses: actions/cache/restore@v4
+        if: ${{ inputs.bypass_cache != true }}
+        with:
+          path: |
+            build/cef_binary_*
+            build/cef*_linuxarm64
+          key: cef-linuxarm64-${{ needs.download-cef.outputs.cef-version }}
+          fail-on-cache-miss: true
+
+      - name: Install system build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gcc g++ cmake ninja-build \
+            libgtk-3-dev libx11-dev libglib2.0-dev \
+            libasound2-dev libnss3-dev \
+            libatk1.0-dev libatk-bridge2.0-dev \
+            libcups2-dev libdrm-dev \
+            libxcomposite-dev libxdamage-dev libxfixes-dev \
+            libxrandr-dev libgbm-dev libxkbcommon-dev \
+            libpango1.0-dev
+
+      - name: Install Python build tools
+        run: python tools/requirements.py && pip install build
+
+      - name: Build libcef_dll_wrapper (ARM64 patches applied)
+        run: python3 tools/build_cef_prebuilt_arm64.py
+
+      - name: Build wheel
+        run: python3 -m build --wheel --no-isolation --outdir dist/
+
+      - name: Smoke-test import
+        run: |
+          pip install --no-cache-dir dist/cefpython3-*.whl
+          cd /tmp && python3 - <<'EOF'
+          import cefpython3, os, sys
+          pkg = os.path.dirname(cefpython3.__file__)
+          libcef = os.path.join(pkg, "libcef.so")
+          print(f"Python {sys.version}")
+          print(f"cefpython3: {cefpython3.__file__}")
+          print(f"libcef.so:  {os.path.getsize(libcef) // 1024 // 1024} MB")
+          print("Import OK")
+          EOF
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-cp${{ matrix.python-version }}-linux_aarch64
+          path: dist/cefpython3-*.whl
+          if-no-files-found: error
+          retention-days: 14
+
+  # ── Stage 3: collect wheels and publish GitHub Release ─────────────────────
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: wheels/
+          merge-multiple: true
+
+      - name: List wheels
+        run: |
+          echo "Wheels to release:"
+          ls -lh wheels/
+
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "value=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: "cefpython3 ${{ steps.tag.outputs.value }} — Linux ARM64"
+          body: |
+            ## cefpython3 — Linux ARM64 (aarch64)
+
+            Pre-built wheels for **Linux ARM64**, compatible with **Raspberry Pi OS Bookworm 64-bit** and any aarch64 Linux system.
+
+            Built from the [linesight/cefpython](https://github.com/linesight/cefpython) fork with ARM64 support (CEF 147 / Chromium 147.0.7727.118).
+
+            ---
+
+            ### Supported Python versions
+
+            | Python | Wheel |
+            |--------|-------|
+            | 3.10 | `cefpython3-...-cp310-cp310-linux_aarch64.whl` |
+            | 3.11 | `cefpython3-...-cp311-cp311-linux_aarch64.whl` |
+            | 3.12 | `cefpython3-...-cp312-cp312-linux_aarch64.whl` |
+            | 3.13 | `cefpython3-...-cp313-cp313-linux_aarch64.whl` |
+            | 3.14 | `cefpython3-...-cp314-cp314-linux_aarch64.whl` |
+
+            > **Raspberry Pi OS Bookworm** ships Python 3.11 — use the `cp311` wheel.
+
+            ---
+
+            ### Installation
+
+            ```bash
+            # Raspberry Pi OS Bookworm (Python 3.11) — replace TAG with this release tag
+            pip install \
+              https://github.com/${{ github.repository }}/releases/download/${{ steps.tag.outputs.value }}/cefpython3-147.0-cp311-cp311-linux_aarch64.whl
+
+            # Other Python versions: replace cp311 with cp310 / cp312 / cp313 / cp314
+            ```
+
+            ### Runtime dependencies (Raspberry Pi OS)
+            ```bash
+            sudo apt-get install -y \
+              libgtk-3-0 libasound2 libnss3 libatk1.0-0 \
+              libatk-bridge2.0-0 libdrm2 libxcomposite1 \
+              libxdamage1 libxfixes3 libxrandr2 libgbm1 \
+              libxkbcommon0 libpango-1.0-0
+            ```
+          files: wheels/*.whl
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true

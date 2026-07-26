@@ -67,16 +67,23 @@ def main():
         log("Valid values: windows32, windows64, linux32, linux64, macosx64")
         sys.exit(1)
 
+    dist_type = args.dist_type if hasattr(args, "dist_type") else "standard"
+
     version = common.get_cefpython_version()
     cef_version = version["CEF_VERSION"]
 
     log("CEF version : {}".format(cef_version))
     log("Platform    : {}".format(cef_postfix2))
+    log("Dist type   : {}".format(dist_type))
     log("Build dir   : {}".format(build_dir))
 
-    # Skip if already extracted
-    extract_dir = os.path.join(
-        build_dir, "cef_binary_{}_{}".format(cef_version, cef_postfix2))
+    # For minimal builds, the extracted dir has a different suffix
+    if dist_type == "minimal":
+        extract_dir = os.path.join(
+            build_dir, "cef_binary_{}_{}_minimal".format(cef_version, cef_postfix2))
+    else:
+        extract_dir = os.path.join(
+            build_dir, "cef_binary_{}_{}".format(cef_version, cef_postfix2))
     if os.path.isdir(extract_dir):
         log("Already extracted: {}".format(extract_dir))
         log("Delete that directory to force a fresh download.")
@@ -84,7 +91,7 @@ def main():
 
     # Query Spotify index
     log("Fetching index: {}".format(SPOTIFY_INDEX_URL))
-    file_info = find_in_index(cef_version, cef_postfix2)
+    file_info = find_in_index(cef_version, cef_postfix2, dist_type)
 
     filename = file_info["name"]
     expected_sha1 = file_info.get("sha1", "")
@@ -152,11 +159,14 @@ def parse_args():
                         help="Keep archive after extraction")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print what would happen without downloading")
+    parser.add_argument("--dist-type", metavar="TYPE", default="standard",
+                        choices=["standard", "minimal"],
+                        help="Distribution type to download (default: standard)")
     return parser.parse_args()
 
 
-def find_in_index(cef_version, cef_postfix2):
-    """Fetch Spotify index and return the standard-distribution file entry."""
+def find_in_index(cef_version, cef_postfix2, dist_type="standard"):
+    """Fetch Spotify index and return the file entry for the given dist type."""
     try:
         from urllib.request import urlopen
         from urllib.error import URLError
@@ -180,10 +190,10 @@ def find_in_index(cef_version, cef_postfix2):
         if ver_entry.get("cef_version") != cef_version:
             continue
         for file_entry in ver_entry.get("files", []):
-            if file_entry.get("type") == "standard":
+            if file_entry.get("type") == dist_type:
                 return file_entry
-        log("ERROR: No standard distribution found for version '{}' on '{}'."
-            .format(cef_version, cef_postfix2))
+        log("ERROR: No {} distribution found for version '{}' on '{}'."
+            .format(dist_type, cef_version, cef_postfix2))
         log("Available file types: {}"
             .format(", ".join(f.get("type", "?")
                               for f in ver_entry.get("files", []))))

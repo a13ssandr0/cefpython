@@ -56,8 +56,16 @@ elif OS_POSTFIX == "mac":
     OS_POSTFIX2 = "macarm64"
     CEF_POSTFIX2 = "macosarm64"
 elif OS_POSTFIX == "linux":
-    OS_POSTFIX2 = "linux32" if ARCH32 else "linux64"
-    CEF_POSTFIX2 = "linux32" if ARCH32 else "linux64"
+    _machine = platform.machine()
+    if ARCH32:
+        OS_POSTFIX2 = "linux32"
+        CEF_POSTFIX2 = "linux32"
+    elif _machine in ("aarch64", "arm64"):
+        OS_POSTFIX2 = "linuxarm64"
+        CEF_POSTFIX2 = "linuxarm64"
+    else:
+        OS_POSTFIX2 = "linux64"
+        CEF_POSTFIX2 = "linux64"
 
 # Platforms
 SYSTEM = platform.system().upper()
@@ -69,17 +77,17 @@ MAC = SYSTEM if SYSTEM == "MAC" else False
 
 OS_POSTFIX2_ARCH = dict(
     WINDOWS={"32bit": "win32", "64bit": "win64"},
-    LINUX={"32bit": "linux32", "64bit": "linux64"},
+    LINUX={"32bit": "linux32", "64bit": "linux64", "arm64": "linuxarm64"},
     MAC={"32bit": "mac32", "64bit": "mac64"},
 )
 CEF_POSTFIX2_ARCH = dict(
     WINDOWS={"32bit": "windows32", "64bit": "windows64"},
-    LINUX={"32bit": "linux32", "64bit": "linux64"},
+    LINUX={"32bit": "linux32", "64bit": "linux64", "arm64": "linuxarm64"},
     MAC={"64bit": "macosx64"},
 )
 PYPI_POSTFIX2_ARCH = dict(
     WINDOWS={"32bit": "win32", "64bit": "win_amd64"},
-    LINUX={"32bit": "manylinux1_i686", "64bit": "manylinux1_x86_64"},
+    LINUX={"32bit": "manylinux1_i686", "64bit": "manylinux1_x86_64", "arm64": "manylinux2014_aarch64"},
     MAC={"64bit": "x86_64"},
 )
 

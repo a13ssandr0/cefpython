@@ -24,6 +24,8 @@ def header_name(platform=None):
         return "cef_version_win.h"
     if plat == "darwin":
         return "cef_version_macarm64.h"
+    if os.uname().machine in ("aarch64", "arm64"):
+        return "cef_version_linuxarm64.h"
     return "cef_version_linux.h"
 
 
