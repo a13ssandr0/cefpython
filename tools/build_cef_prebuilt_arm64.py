@@ -145,12 +145,18 @@ def main():
 
     # Set up prebuilt directory structure expected by CMakeLists.txt:
     #   build/cef{major}_{version}_linuxarm64/
-    #     bin/  <- Release/ + Resources/
-    #     lib/  <- libcef_dll_wrapper.a
+    #     bin/      <- Release/ + Resources/
+    #     lib/      <- libcef_dll_wrapper.a
+    #     include/  <- CEF's public headers (cef_config.h, cef_api_versions.h,
+    #                  cef_pack_resources.h, base/internal/cef_net_error_list.h,
+    #                  etc.): platform-generated, not vendored in src/include,
+    #                  and referenced via "${CEF_ROOT}" on the include path
+    #                  (see the comment in the top-level CMakeLists.txt)
     prebuilt_name = "cef{}_{}_linuxarm64".format(chrome_major, cef_version)
     prebuilt_dir = os.path.join(BUILD_DIR, prebuilt_name)
     bin_dir = os.path.join(prebuilt_dir, "bin")
     lib_dir = os.path.join(prebuilt_dir, "lib")
+    include_dir = os.path.join(prebuilt_dir, "include")
 
     if os.path.exists(prebuilt_dir):
         log("Prebuilt dir already exists: {}".format(prebuilt_dir))
@@ -159,6 +165,15 @@ def main():
     log("Creating prebuilt dir: {}".format(prebuilt_dir))
     os.makedirs(bin_dir)
     os.makedirs(lib_dir)
+
+    # Copy include/ -> include/
+    include_src = os.path.join(cef_src, "include")
+    if os.path.isdir(include_src):
+        log("Copying include/ -> include/")
+        shutil.copytree(include_src, include_dir)
+    else:
+        log("ERROR: include/ dir not found in {}".format(cef_src))
+        sys.exit(1)
 
     # Copy Release/ -> bin/
     release_src = os.path.join(cef_src, "Release")
