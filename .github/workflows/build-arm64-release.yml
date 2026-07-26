@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 
@@ -40,7 +40,7 @@ jobs:
           echo "CEF version: $ver"
 
       - name: Cache CEF binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         if: ${{ inputs.bypass_cache != true }}
         with:
           path: |
@@ -66,16 +66,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Restore CEF cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         if: ${{ inputs.bypass_cache != true }}
         with:
           path: |
@@ -120,7 +120,7 @@ jobs:
           EOF
 
       - name: Upload wheel artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheel-cp${{ matrix.python-version }}-linux_aarch64
           path: dist/cefpython3-*.whl
@@ -137,7 +137,7 @@ jobs:
 
     steps:
       - name: Download all wheel artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: wheels/
           merge-multiple: true
@@ -157,7 +157,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.value }}
           name: "cefpython3 ${{ steps.tag.outputs.value }} — Linux ARM64"
