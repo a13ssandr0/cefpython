@@ -116,6 +116,7 @@ jobs:
           print(f"Python {sys.version}")
           print(f"cefpython3: {cefpython3.__file__}")
           print(f"libcef.so:  {os.path.getsize(libcef) // 1024 // 1024} MB")
+          assert os.path.getsize(libcef) < 600 * 1024 * 1024, "libcef.so was not stripped (unstripped aarch64 build is ~1980 MB)"
           print("Import OK")
           EOF
 

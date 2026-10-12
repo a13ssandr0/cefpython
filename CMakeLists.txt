@@ -367,3 +367,19 @@ else()
         PATTERN "chrome-sandbox" EXCLUDE
     )
 endif()
+
+# Linux: CEF's prebuilt libcef.so (and the SwiftShader/ANGLE libraries) are distributed WITH debug info and full symbol
+# tables - on aarch64 libcef.so is ~1980 MB, of which only ~243 MB is code/data (measured on the UniTotem kiosk). Nothing at
+# runtime needs them (dynamic linking uses .dynsym, which --strip-unneeded keeps), so the installed wheel is stripped.
+if(UNIX AND NOT APPLE AND CMAKE_STRIP)
+    install(CODE "
+        file(GLOB _cef_so \"\${CMAKE_INSTALL_PREFIX}/cefpython3/lib*.so*\")
+        foreach(_lib IN LISTS _cef_so)
+            message(STATUS \"Stripping \${_lib}\")
+            execute_process(COMMAND \"${CMAKE_STRIP}\" --strip-unneeded \"\${_lib}\" RESULT_VARIABLE _rc)
+            if(NOT _rc EQUAL 0)
+                message(FATAL_ERROR \"strip failed for \${_lib}\")
+            endif()
+        endforeach()
+    ")
+endif()
