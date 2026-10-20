@@ -40,6 +40,7 @@
 
 #include <vector>
 
+#include "include/cef_api_hash.h"
 #include "include/cef_base.h"
 
 ///
@@ -172,6 +173,17 @@ class CefDisplay : public CefBaseRefCounted {
   ///
   /*--cef()--*/
   virtual int GetRotation() = 0;
+
+#if CEF_API_ADDED(CEF_EXPERIMENTAL)
+  ///
+  /// Returns this Display's user-friendly label, determined by the platform,
+  /// or an empty string. On Wayland this is the description of the wl_output
+  /// (the compositor's make, model and, usually, the connector name such as
+  /// "DP-1").
+  ///
+  /*--cef(added=experimental)--*/
+  virtual CefString GetLabel() = 0;
+#endif
 };
 
 #endif  // CEF_INCLUDE_VIEWS_CEF_DISPLAY_H_

@@ -38,6 +38,7 @@
 #define CEF_INCLUDE_VIEWS_CEF_WINDOW_H_
 #pragma once
 
+#include "include/cef_api_hash.h"
 #include "include/cef_image.h"
 #include "include/cef_menu_model.h"
 #include "include/views/cef_display.h"
@@ -172,6 +173,22 @@ class CefWindow : public CefPanel {
   ///
   /*--cef()--*/
   virtual void SetFullscreen(bool fullscreen) = 0;
+
+#if CEF_API_ADDED(CEF_EXPERIMENTAL)
+  ///
+  /// Set fullscreen Window state on the Display with the specified |display_id|
+  /// (see CefDisplay::GetID). A Window that is already fullscreen on another
+  /// Display is moved to the requested one. Where the platform lets the
+  /// application choose the Display (Wayland: xdg_toplevel.set_fullscreen with
+  /// a wl_output; X11: _NET_WM_FULLSCREEN_MONITORS) the compositor/window
+  /// manager is asked to use it, otherwise, or for an unknown |display_id|,
+  /// this behaves like SetFullscreen(true). May be called before the Window
+  /// is shown. The CefWindowDelegate::OnWindowFullscreenTransition method will
+  /// be called during the fullscreen transition for notification purposes.
+  ///
+  /*--cef(added=experimental)--*/
+  virtual void SetFullscreenOnDisplay(int64_t display_id) = 0;
+#endif
 
   ///
   /// Returns true if the Window is maximized.

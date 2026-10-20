@@ -54,6 +54,7 @@ cdef extern from "include/views/cef_display.h":
         CefRect GetBounds()
         CefRect GetWorkArea()
         int GetRotation()
+        CefString GetLabel()
 
 cdef extern from "include/views/cef_view.h":
     cdef cppclass CefView:
@@ -132,6 +133,7 @@ cdef extern from "include/views/cef_window.h":
         void Minimize()
         void Restore()
         void SetFullscreen(cpp_bool fullscreen)
+        void SetFullscreenOnDisplay(int64_t display_id)
         cpp_bool IsMaximized()
         cpp_bool IsMinimized()
         cpp_bool IsFullscreen()

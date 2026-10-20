@@ -64,6 +64,24 @@ cdef class Display:
     def GetRotation(self):
         return int(self.cefDisplay.get().GetRotation())
 
+    def GetLabel(self):
+        """User-friendly label given by the platform, may be empty. On
+        Wayland it is the wl_output description."""
+        return CefToPyString(self.cefDisplay.get().GetLabel())
+
+    @staticmethod
+    def FindByOutputName(name):
+        """The Display of the output called |name| (the connector name such
+        as "DP-1" or "HDMI-A-1"), or None. Chromium has no output name in
+        its Display, only the label; wlroots based compositors (labwc, sway,
+        river, cage, wayfire) end it with the name in parentheses, e.g.
+        "Dell Inc. U2720Q ABC123 (DP-1)"."""
+        suffix = "(%s)" % name
+        for display in Display.GetAllDisplays():
+            if display.GetLabel().endswith(suffix):
+                return display
+        return None
+
     def __eq__(self, other):
         return isinstance(other, Display) and self.GetID() == other.GetID()
 

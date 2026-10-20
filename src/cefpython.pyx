@@ -780,6 +780,17 @@ def CreateBrowserSync(windowInfo=None,
     if window_title and windowInfo.parentWindowHandle == 0:
         windowInfo.windowName = window_title
 
+    IF UNAME_SYSNAME == "Linux":
+        # CEF's native windowed browser exists on X11 only: on Wayland the
+        # browser gets a CEF Views window of its own instead.
+        if g_commandLineSwitches.get("ozone-platform") == "wayland" \
+                and windowInfo.windowType == "child" \
+                and not windowInfo.parentWindowHandle:
+            if not browserSettings:
+                browserSettings = {}
+            return CreateViewsBrowserSync(windowInfo, browserSettings,
+                                          navigateUrl)
+
     # Browser settings
     if not browserSettings:
         browserSettings = {}

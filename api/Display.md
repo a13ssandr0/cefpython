@@ -1,0 +1,140 @@
+[API categories](API-categories.md) | [API index](API-index.md)
+
+
+# Display (object)
+
+One monitor as seen by Chromium (`CefDisplay`). Obtain objects from the static
+methods or from [Window](Window.md).GetDisplay(). Must be used on the UI thread.
+
+Table of contents:
+* [Static methods](#static-methods)
+  * [GetPrimaryDisplay](#getprimarydisplay)
+  * [GetDisplayNearestPoint](#getdisplaynearestpoint)
+  * [GetDisplayMatchingBounds](#getdisplaymatchingbounds)
+  * [GetDisplayCount](#getdisplaycount)
+  * [GetAllDisplays](#getalldisplays)
+  * [FindByOutputName](#findbyoutputname)
+* [Methods](#methods)
+  * [GetID](#getid)
+  * [GetDeviceScaleFactor](#getdevicescalefactor)
+  * [GetBounds](#getbounds)
+  * [GetWorkArea](#getworkarea)
+  * [GetRotation](#getrotation)
+  * [GetLabel](#getlabel)
+
+
+## Static methods
+
+
+### GetPrimaryDisplay
+
+| | |
+| --- | --- |
+| __Return__ | [Display](Display.md) |
+
+
+### GetDisplayNearestPoint
+
+| Parameter | Type |
+| --- | --- |
+| point | list [x, y] |
+| input_pixel_coords (optional) | bool |
+| __Return__ | [Display](Display.md) |
+
+
+### GetDisplayMatchingBounds
+
+| Parameter | Type |
+| --- | --- |
+| bounds | list [x, y, width, height] |
+| input_pixel_coords (optional) | bool |
+| __Return__ | [Display](Display.md) |
+
+
+### GetDisplayCount
+
+| | |
+| --- | --- |
+| __Return__ | int |
+
+Mirrored displays are not counted.
+
+
+### GetAllDisplays
+
+| | |
+| --- | --- |
+| __Return__ | list of [Display](Display.md) |
+
+
+### FindByOutputName
+
+| Parameter | Type |
+| --- | --- |
+| name | string |
+| __Return__ | [Display](Display.md) or None |
+
+The display of the output called `name` (the connector name: `"DP-1"`,
+`"HDMI-A-1"`, ...). Chromium's Display has no output name, only the label
+(see [GetLabel](#getlabel)): the compositors based on wlroots (labwc, sway,
+river, cage, wayfire) end the `wl_output` description with the name in
+parentheses (`"Dell Inc. U2720Q ABC123 (DP-1)"`) and this function compares
+with that. For other compositors match on [GetBounds](#getbounds) (the
+positions that `wlr-randr`/`kscreen-doctor` print).
+
+
+## Methods
+
+
+### GetID
+
+| | |
+| --- | --- |
+| __Return__ | int |
+
+Unique identifier (on Wayland: the registry name of the `wl_output` global; it
+changes when the output is unplugged and plugged back). The value
+`Window.SetFullscreenOnDisplay()` takes.
+
+
+### GetDeviceScaleFactor
+
+| | |
+| --- | --- |
+| __Return__ | float |
+
+
+### GetBounds
+
+| | |
+| --- | --- |
+| __Return__ | list [x, y, width, height] |
+
+In DIP screen coordinates.
+
+
+### GetWorkArea
+
+| | |
+| --- | --- |
+| __Return__ | list [x, y, width, height] |
+
+
+### GetRotation
+
+| | |
+| --- | --- |
+| __Return__ | int |
+
+Degrees.
+
+
+### GetLabel
+
+| | |
+| --- | --- |
+| __Return__ | string |
+
+User-friendly label given by the platform, possibly empty. On Wayland it is the
+`wl_output` description. Requires a CEF build with `CefDisplay::GetLabel`
+(`tools/cef-server/patches` of the UniTotem repository).

@@ -351,6 +351,12 @@ cdef class Window(Panel):
     def SetFullscreen(self, fullscreen):
         self.GetCefWindow().get().SetFullscreen(bool(fullscreen))
 
+    def SetFullscreenOnDisplay(self, display_id):
+        """Fullscreen on the Display with this id (Display.GetID()); also
+        moves a window that is already fullscreen. May be called before
+        Show()."""
+        self.GetCefWindow().get().SetFullscreenOnDisplay(<int64_t>int(display_id))
+
     def IsMaximized(self):
         return bool(self.GetCefWindow().get().IsMaximized())
 
@@ -499,6 +505,47 @@ cdef class BrowserView(View):
 
     def GetRuntimeStyle(self):
         return int(self.GetCefBrowserView().get().GetRuntimeStyle())
+
+# -----------------------------------------------------------------------------
+# Views window behind CreateBrowserSync() on Wayland
+
+class ViewsBrowserShim:
+    """Window and browser view delegate of the browser created by
+    CreateBrowserSync() when WindowInfo has no parent window and CEF runs
+    on the Wayland Ozone backend, where CEF's native windowed browser does
+    not exist (see docs: api/Window.md, "CreateBrowserSync on Wayland").
+    The window is closed together with its browser, so that
+    Browser.CloseBrowser() does not leave an empty window behind."""
+
+    def __init__(self, windowInfo):
+        self.windowInfo = windowInfo
+        self.window = None
+
+    def OnWindowCreated(self, window):
+        self.window = window
+
+    def GetInitialBounds(self, window):
+        rect = self.windowInfo.windowRect
+        if rect and rect[2] > rect[0] and rect[3] > rect[1]:
+            return [rect[0], rect[1], rect[2] - rect[0], rect[3] - rect[1]]
+        return [0, 0, 800, 600]
+
+    def OnBrowserDestroyed(self, browserView, browser):
+        if self.window is not None and not self.window.IsClosed():
+            self.window.Close()
+
+cdef object CreateViewsBrowserSync(object windowInfo, object browserSettings,
+                                   object navigateUrl):
+    shim = ViewsBrowserShim(windowInfo)
+    browserView = BrowserView.CreateBrowserView(
+            url=navigateUrl, settings=browserSettings, delegate=shim)
+    window = Window.CreateTopLevelWindow(shim)
+    window.SetToFillLayout()
+    window.AddChildView(browserView)
+    if windowInfo.windowName:
+        window.SetTitle(windowInfo.windowName)
+    window.Show()
+    return browserView.GetBrowser()
 
 # -----------------------------------------------------------------------------
 # Delegate callbacks (called from client_handler/views_delegate.cpp). Each
