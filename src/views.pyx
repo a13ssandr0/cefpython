@@ -225,40 +225,41 @@ cdef class View:
 
 cdef class Panel(View):
 
-    cdef CefPanel* GetCefPanel(self) except *:
+    cdef CefRefPtr[CefPanel] GetCefPanel(self) except *:
+        # Returned by value: AsPanel() hands out a new reference (a new
+        # wrapper object of the CEF library) that must be kept alive.
         cdef CefRefPtr[CefPanel] cefPanel = self.GetCefView().AsPanel()
         if not cefPanel.get():
             raise Exception("Panel: the CEF panel was destroyed")
-        # The view keeps the panel alive.
-        return cefPanel.get()
+        return cefPanel
 
     def SetToFillLayout(self):
         """Makes every child view fill the whole panel."""
-        self.GetCefPanel().SetToFillLayout()
+        self.GetCefPanel().get().SetToFillLayout()
 
     def Layout(self):
-        self.GetCefPanel().Layout()
+        self.GetCefPanel().get().Layout()
 
     def AddChildView(self, View view):
-        self.GetCefPanel().AddChildView(view.cefView)
+        self.GetCefPanel().get().AddChildView(view.cefView)
 
     def AddChildViewAt(self, View view, int index):
-        self.GetCefPanel().AddChildViewAt(view.cefView, index)
+        self.GetCefPanel().get().AddChildViewAt(view.cefView, index)
 
     def ReorderChildView(self, View view, int index):
-        self.GetCefPanel().ReorderChildView(view.cefView, index)
+        self.GetCefPanel().get().ReorderChildView(view.cefView, index)
 
     def RemoveChildView(self, View view):
-        self.GetCefPanel().RemoveChildView(view.cefView)
+        self.GetCefPanel().get().RemoveChildView(view.cefView)
 
     def RemoveAllChildViews(self):
-        self.GetCefPanel().RemoveAllChildViews()
+        self.GetCefPanel().get().RemoveAllChildViews()
 
     def GetChildViewCount(self):
-        return int(self.GetCefPanel().GetChildViewCount())
+        return int(self.GetCefPanel().get().GetChildViewCount())
 
     def GetChildViewAt(self, int index):
-        return ViewWrap(self.GetCefPanel().GetChildViewAt(index))
+        return ViewWrap(self.GetCefPanel().get().GetChildViewAt(index))
 
 # -----------------------------------------------------------------------------
 # Window
@@ -278,12 +279,12 @@ cdef class Window(Panel):
     cdef dict userData
     # The Python delegate is kept alive by the C++ ViewsWindowDelegate.
 
-    cdef CefWindow* GetCefWindow(self) except *:
+    cdef CefRefPtr[CefWindow] GetCefWindow(self) except *:
         cdef CefRefPtr[CefWindow] cefWindow
-        cefWindow = self.GetCefPanel().AsWindow()
+        cefWindow = self.GetCefPanel().get().AsWindow()
         if not cefWindow.get():
             raise Exception("Window: the CEF window was destroyed")
-        return cefWindow.get()
+        return cefWindow
 
     @staticmethod
     def CreateTopLevelWindow(delegate=None):
@@ -301,85 +302,85 @@ cdef class Window(Panel):
         return WindowWrap(cefWindow)
 
     def Show(self):
-        self.GetCefWindow().Show()
+        self.GetCefWindow().get().Show()
 
     def Hide(self):
-        self.GetCefWindow().Hide()
+        self.GetCefWindow().get().Hide()
 
     def CenterWindow(self, size):
-        self.GetCefWindow().CenterWindow(ListToSize(size))
+        self.GetCefWindow().get().CenterWindow(ListToSize(size))
 
     def Close(self):
         """Closes the window. The delegate's CanClose() decides (by default
         the browsers inside get their unload handlers run first) and the
         native window is destroyed, followed by OnWindowDestroyed()."""
-        self.GetCefWindow().Close()
+        self.GetCefWindow().get().Close()
 
     def IsClosed(self):
         if not self.cefView.get():
             return True
-        return bool(self.GetCefWindow().IsClosed())
+        return bool(self.GetCefWindow().get().IsClosed())
 
     def Activate(self):
-        self.GetCefWindow().Activate()
+        self.GetCefWindow().get().Activate()
 
     def Deactivate(self):
-        self.GetCefWindow().Deactivate()
+        self.GetCefWindow().get().Deactivate()
 
     def IsActive(self):
-        return bool(self.GetCefWindow().IsActive())
+        return bool(self.GetCefWindow().get().IsActive())
 
     def BringToTop(self):
-        self.GetCefWindow().BringToTop()
+        self.GetCefWindow().get().BringToTop()
 
     def SetAlwaysOnTop(self, on_top):
-        self.GetCefWindow().SetAlwaysOnTop(bool(on_top))
+        self.GetCefWindow().get().SetAlwaysOnTop(bool(on_top))
 
     def IsAlwaysOnTop(self):
-        return bool(self.GetCefWindow().IsAlwaysOnTop())
+        return bool(self.GetCefWindow().get().IsAlwaysOnTop())
 
     def Maximize(self):
-        self.GetCefWindow().Maximize()
+        self.GetCefWindow().get().Maximize()
 
     def Minimize(self):
-        self.GetCefWindow().Minimize()
+        self.GetCefWindow().get().Minimize()
 
     def Restore(self):
-        self.GetCefWindow().Restore()
+        self.GetCefWindow().get().Restore()
 
     def SetFullscreen(self, fullscreen):
-        self.GetCefWindow().SetFullscreen(bool(fullscreen))
+        self.GetCefWindow().get().SetFullscreen(bool(fullscreen))
 
     def IsMaximized(self):
-        return bool(self.GetCefWindow().IsMaximized())
+        return bool(self.GetCefWindow().get().IsMaximized())
 
     def IsMinimized(self):
-        return bool(self.GetCefWindow().IsMinimized())
+        return bool(self.GetCefWindow().get().IsMinimized())
 
     def IsFullscreen(self):
-        return bool(self.GetCefWindow().IsFullscreen())
+        return bool(self.GetCefWindow().get().IsFullscreen())
 
     def SetTitle(self, title):
         cdef CefString cefTitle
         PyToCefString(title, cefTitle)
-        self.GetCefWindow().SetTitle(cefTitle)
+        self.GetCefWindow().get().SetTitle(cefTitle)
 
     def GetTitle(self):
-        return CefToPyString(self.GetCefWindow().GetTitle())
+        return CefToPyString(self.GetCefWindow().get().GetTitle())
 
     def GetDisplay(self):
         """The Display the window is on."""
-        return DisplayWrap(self.GetCefWindow().GetDisplay())
+        return DisplayWrap(self.GetCefWindow().get().GetDisplay())
 
     def GetClientAreaBoundsInScreen(self):
-        cdef CefRect rect = self.GetCefWindow().GetClientAreaBoundsInScreen()
+        cdef CefRect rect = self.GetCefWindow().get().GetClientAreaBoundsInScreen()
         return RectToList(rect)
 
     def GetWindowHandle(self):
-        return <WindowHandle>self.GetCefWindow().GetWindowHandle()
+        return <WindowHandle>self.GetCefWindow().get().GetWindowHandle()
 
     def GetRuntimeStyle(self):
-        return int(self.GetCefWindow().GetRuntimeStyle())
+        return int(self.GetCefWindow().get().GetRuntimeStyle())
 
     def SetUserData(self, key, value):
         self.userData[key] = value
@@ -410,12 +411,12 @@ cdef class BrowserView(View):
     cdef CefRefPtr[RequestContextHandler] requestContextHandler
     cdef py_bool bindRequestContext
 
-    cdef CefBrowserView* GetCefBrowserView(self) except *:
+    cdef CefRefPtr[CefBrowserView] GetCefBrowserView(self) except *:
         cdef CefRefPtr[CefBrowserView] cefBrowserView = \
                 self.GetCefView().AsBrowserView()
         if not cefBrowserView.get():
             raise Exception("BrowserView: the CEF view was destroyed")
-        return cefBrowserView.get()
+        return cefBrowserView
 
     @staticmethod
     def CreateBrowserView(url="", settings=None, delegate=None, **kwargs):
@@ -487,17 +488,17 @@ cdef class BrowserView(View):
         """The Browser object, or None until CEF created the browser (when
         the view is attached to a window)."""
         cdef CefRefPtr[CefBrowser] cefBrowser = \
-                self.GetCefBrowserView().GetBrowser()
+                self.GetCefBrowserView().get().GetBrowser()
         if not cefBrowser.get():
             return None
         return GetPyBrowser(cefBrowser, "BrowserView.GetBrowser")
 
     def SetPreferAccelerators(self, prefer_accelerators):
-        self.GetCefBrowserView().SetPreferAccelerators(
+        self.GetCefBrowserView().get().SetPreferAccelerators(
                 bool(prefer_accelerators))
 
     def GetRuntimeStyle(self):
-        return int(self.GetCefBrowserView().GetRuntimeStyle())
+        return int(self.GetCefBrowserView().get().GetRuntimeStyle())
 
 # -----------------------------------------------------------------------------
 # Delegate callbacks (called from client_handler/views_delegate.cpp). Each
@@ -675,7 +676,7 @@ cdef public cpp_bool WindowDelegate_GetParentWindow(
             canActivateMenu[0] = bool(result[2]) if len(result) > 2 else True
         else:
             parentWindow = result
-        parent[0].Assign(parentWindow.GetCefWindow())
+        parent[0].Assign(parentWindow.GetCefWindow().get())
         return True
     except:
         (exc_type, exc_value, exc_trace) = sys.exc_info()
