@@ -11,6 +11,7 @@ Table of contents:
   * [proxy-server](#proxy-server)
   * [no-proxy-server](#no-proxy-server)
   * [disable-gpu](#disable-gpu)
+  * [ozone-platform](#ozone-platform)
 * [Chromium switches by category](#chromium-switches-by-category)
 
 
@@ -62,6 +63,17 @@ By default Chromium uses the IE proxy settings (set in Internet Explorer options
 ### disable-gpu
 
 Disable GPU rendering and switch to CPU software rendering. This flag can fix the [black/white browser screen](../Knowledge-base.md#blackwhite-browser-screen) issue.
+
+
+### ozone-platform
+
+Linux only: the windowing backend, `x11`, `wayland` or `auto` (Chromium decides
+from the environment). `Initialize()` sets `wayland` when `WAYLAND_DISPLAY` is
+set and `DISPLAY` is not (a compositor with no X server, such as a kiosk) and
+`x11` otherwise, so that a desktop running XWayland keeps the X11 behaviour
+that `WindowInfo.SetAsChild()` embedding needs. Pass the switch to override.
+On the Wayland backend open browsers with [Window](Window.md) and
+[BrowserView](BrowserView.md).
 
 
 ## Chromium switches by category
