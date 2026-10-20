@@ -152,17 +152,22 @@ cdef class WindowInfo:
                 if "WAYLAND_DISPLAY" in _os.environ:
                     warnings.warn(
                         "WindowInfo.SetAsChild: parentWindowHandle is 0 on Linux "
-                        "in a Wayland session. The GUI toolkit is likely using the "
-                        "native Wayland backend where winId()/GetHandle() returns 0 "
-                        "instead of an X11 window ID — CEF will open a detached "
-                        "window instead of embedding. Force X11 (XWayland) before "
-                        "initialising the toolkit:\n"
+                        "in a Wayland session, so CEF opens a top-level window "
+                        "of its own instead of embedding. Embedding into a "
+                        "toolkit window needs an X11 window id: run CEF on "
+                        "the X11 backend (the default unless DISPLAY is unset: "
+                        "ozone-platform=x11, i.e. XWayland) and the toolkit on "
+                        "X11 too, before initialising it:\n"
                         "  Qt (PyQt5/PyQt6/PySide2/PySide6): "
                         "os.environ[\"QT_QPA_PLATFORM\"] = \"xcb\"\n"
                         "  GTK (wxPython/PyGTK): "
                         "os.environ[\"GDK_BACKEND\"] = \"x11\"\n"
                         "  SDL2 (pysdl2): "
-                        "os.environ[\"SDL_VIDEODRIVER\"] = \"x11\"",
+                        "os.environ[\"SDL_VIDEODRIVER\"] = \"x11\"\n"
+                        "A native Wayland application cannot embed CEF at "
+                        "all: open the browser in a window of its own with "
+                        "cef.Window.CreateTopLevelWindow() and "
+                        "cef.BrowserView.CreateBrowserView() (CEF Views).",
                         stacklevel=2,
                     )
         self.parentWindowHandle = parentWindowHandle

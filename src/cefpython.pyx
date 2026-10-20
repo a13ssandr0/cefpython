@@ -593,22 +593,30 @@ def Initialize(applicationSettings=None, commandLineSwitches=None, **kwargs):
         # argv is built from g_commandLineSwitches below. setdefault lets an app
         # override either by passing it explicitly to cef.Initialize(switches=).
         #
-        # Force Chrome's Ozone backend to X11.  This is the *only* thing keeping
-        # Chromium off the Wayland display on a Wayland session — cefpython embeds
-        # via X11 window handles (CefWindowInfo.SetAsChild) and drives X11 window
-        # geometry directly.
+        # Choose Chrome's Ozone backend. X11 is the default: cefpython embeds
+        # into X11 window handles (CefWindowInfo.SetAsChild) and drives X11
+        # window geometry directly, which only works on the X11 backend (on a
+        # Wayland desktop through XWayland).
         #
         # Root cause (upstream CEF): native windowed embedding into a client
-        # parent_window is implemented for X11 only — CreateHostWindow() in CEF's
-        # libcef/browser/native/browser_platform_delegate_native_linux.cc is wrapped
-        # entirely in `#if BUILDFLAG(SUPPORTS_OZONE_X11)` (creating a CefWindowX11)
-        # with no Wayland branch, and there is no window_wayland implementation.
-        # Wayland has no cross-process window embedding (no X11-style window IDs /
-        # XReparent), so CEF cannot parent the browser into a foreign Wayland
-        # surface; embedders must run under X11/XWayland.  Verified on CEF 147:
-        # without this switch, a Wayland session selects the Wayland Ozone backend
-        # and the embedding path crashes.
-        g_commandLineSwitches.setdefault("ozone-platform", "x11")
+        # parent_window is implemented for X11 only - CreateHostWindow() in CEF's
+        # libcef/browser/native/browser_platform_delegate_native_linux.cc is
+        # wrapped entirely in `#if BUILDFLAG(SUPPORTS_OZONE_X11)` with no
+        # Wayland branch, and Wayland has no cross-process window embedding.
+        #
+        # The Wayland backend is selected automatically in a session that has
+        # a Wayland compositor and no X server (WAYLAND_DISPLAY set, DISPLAY
+        # unset, e.g. a kiosk running labwc): there is nothing to fall back on
+        # and a Wayland application opens its windows with the Views API
+        # (cef.Window, cef.BrowserView). With both variables set (a normal
+        # desktop) X11/XWayland stays the default, so existing embedding code
+        # keeps working. Either choice is overridden by passing the
+        # "ozone-platform" switch ("x11", "wayland" or "auto") to Initialize().
+        # setdefault leaves an explicit caller-provided value untouched.
+        if os.environ.get("WAYLAND_DISPLAY") and not os.environ.get("DISPLAY"):
+            g_commandLineSwitches.setdefault("ozone-platform", "wayland")
+        else:
+            g_commandLineSwitches.setdefault("ozone-platform", "x11")
 
         # Disable Chromium's Linux sandbox.  It is on by default and needs either a
         # SUID-root "chrome-sandbox" helper or an unprivileged user namespace to
@@ -693,7 +701,8 @@ def Initialize(applicationSettings=None, commandLineSwitches=None, **kwargs):
         Debug("CefInitialize() failed")
 
     IF UNAME_SYSNAME == "Linux":
-        WindowUtils.InstallX11ErrorHandlers()
+        if g_commandLineSwitches.get("ozone-platform") != "wayland":
+            WindowUtils.InstallX11ErrorHandlers()
 
     return ret
 
