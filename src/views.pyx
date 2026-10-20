@@ -28,12 +28,22 @@ RUNTIME_STYLE_DEFAULT = CEF_RUNTIME_STYLE_DEFAULT
 RUNTIME_STYLE_CHROME = CEF_RUNTIME_STYLE_CHROME
 RUNTIME_STYLE_ALLOY = CEF_RUNTIME_STYLE_ALLOY
 
-# Windows and browser views known to Python, by address of the CefView.
-# A Window is removed after WindowDelegate.OnWindowDestroyed(), a BrowserView
-# after BrowserViewDelegate.OnBrowserDestroyed(). Entries keep the CEF objects
+# Windows and browser views known to Python. A Window is removed after
+# WindowDelegate.OnWindowDestroyed(), a BrowserView after
+# BrowserViewDelegate.OnBrowserDestroyed(). Entries keep the CEF objects
 # alive, so that the same Python object is handed out for the same window.
-cdef dict g_pyWindows = {}
-cdef dict g_pyBrowserViews = {}
+# The CEF library creates a new wrapper object every time it hands out a view,
+# so the address says nothing about identity: CefView::IsSame() is used.
+cdef list g_pyWindows = []
+cdef list g_pyBrowserViews = []
+
+cdef object FindView(list registry, CefRefPtr[CefView] cefView):
+    cdef View known
+    for known in registry:
+        if known.cefView.get() != NULL \
+                and known.cefView.get().IsSame(cefView):
+            return known
+    return None
 
 # -----------------------------------------------------------------------------
 # Conversions
@@ -50,9 +60,6 @@ cdef CefSize ListToSize(object value) except *:
     if value is None or len(value) != 2:
         raise Exception("Size must be a list [width, height]")
     return CefSize(int(value[0]), int(value[1]))
-
-cdef inline uintptr_t ViewKey(CefView* view) noexcept:
-    return <uintptr_t>view
 
 # -----------------------------------------------------------------------------
 # View (base of Panel, Window and BrowserView)
@@ -265,14 +272,14 @@ cdef class Panel(View):
 # Window
 
 cdef Window WindowWrap(CefRefPtr[CefWindow] cefWindow):
-    cdef uintptr_t key = ViewKey(<CefView*>cefWindow.get())
-    cdef Window window
-    if key in g_pyWindows:
-        return g_pyWindows[key]
+    cdef CefRefPtr[CefView] cefView = CefRefPtr[CefView](<CefView*>cefWindow.get())
+    cdef Window window = FindView(g_pyWindows, cefView)
+    if window is not None:
+        return window
     window = Window.__new__(Window)
-    window.cefView = CefRefPtr[CefView](<CefView*>cefWindow.get())
+    window.cefView = cefView
     window.userData = {}
-    g_pyWindows[key] = window
+    g_pyWindows.append(window)
     return window
 
 cdef class Window(Panel):
@@ -402,13 +409,14 @@ cdef class Window(Panel):
 # BrowserView
 
 cdef BrowserView BrowserViewWrap(CefRefPtr[CefBrowserView] cefBrowserView):
-    cdef uintptr_t key = ViewKey(<CefView*>cefBrowserView.get())
-    cdef BrowserView browserView
-    if key in g_pyBrowserViews:
-        return g_pyBrowserViews[key]
+    cdef CefRefPtr[CefView] cefView = \
+            CefRefPtr[CefView](<CefView*>cefBrowserView.get())
+    cdef BrowserView browserView = FindView(g_pyBrowserViews, cefView)
+    if browserView is not None:
+        return browserView
     browserView = BrowserView.__new__(BrowserView)
-    browserView.cefView = CefRefPtr[CefView](<CefView*>cefBrowserView.get())
-    g_pyBrowserViews[key] = browserView
+    browserView.cefView = cefView
+    g_pyBrowserViews.append(browserView)
     return browserView
 
 cdef class BrowserView(View):
@@ -654,7 +662,6 @@ cdef public void WindowDelegate_OnWindowEvent(
         CefRefPtr[CefWindow] cefWindow) noexcept with gil:
     # OnWindowCreated, OnWindowClosing, OnWindowDestroyed
     cdef Window window
-    cdef uintptr_t key
     try:
         window = WindowWrap(cefWindow)
         method = DelegateMethod(delegate, name)
@@ -664,8 +671,8 @@ cdef public void WindowDelegate_OnWindowEvent(
         finally:
             if CharToPyString(name) == "OnWindowDestroyed":
                 # The CEF window is gone: let go of it.
-                key = ViewKey(<CefView*>cefWindow.get())
-                g_pyWindows.pop(key, None)
+                if window in g_pyWindows:
+                    g_pyWindows.remove(window)
                 window.cefView.Assign(nullptr)
     except:
         (exc_type, exc_value, exc_trace) = sys.exc_info()
@@ -828,7 +835,6 @@ cdef public void BrowserViewDelegate_OnBrowserEvent(
     cdef BrowserView browserView
     cdef PyBrowser pyBrowser
     cdef int browserId
-    cdef uintptr_t key
     cdef py_bool created = (CharToPyString(name) == "OnBrowserCreated")
     try:
         browserView = BrowserViewWrap(cefBrowserView)
@@ -847,8 +853,8 @@ cdef public void BrowserViewDelegate_OnBrowserEvent(
                 method(browserView, pyBrowser)
         finally:
             if not created:
-                key = ViewKey(<CefView*>cefBrowserView.get())
-                g_pyBrowserViews.pop(key, None)
+                if browserView in g_pyBrowserViews:
+                    g_pyBrowserViews.remove(browserView)
                 browserView.requestContextHandler.Assign(nullptr)
     except:
         (exc_type, exc_value, exc_trace) = sys.exc_info()
