@@ -76,9 +76,10 @@ cdef class Display:
         its Display, only the label; wlroots based compositors (labwc, sway,
         river, cage, wayfire) end it with the name in parentheses, e.g.
         "Dell Inc. U2720Q ABC123 (DP-1)"."""
-        suffix = "(%s)" % name
+        # "(DP-1)", or "(DP-1 via <adapter>)" for some connector types
+        pattern = re.compile(r"\(%s( via [^)]*)?\)$" % re.escape(name))
         for display in Display.GetAllDisplays():
-            if display.GetLabel().endswith(suffix):
+            if pattern.search(display.GetLabel()):
                 return display
         return None
 
