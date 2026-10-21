@@ -37,6 +37,10 @@ workarounds.
 - [hello_world.py](hello_world.py) - Basic example, doesn't require any
   third party GUI framework to run
 - [tutorial.py](tutorial.py) - Example from [Tutorial](../docs/Tutorial.md)
+- [views.py](views.py) - CEF Views window (frameless, fullscreen on a chosen
+  output, closed for real), needs no GUI framework, works on X11 and Wayland
+- [views_hotplug.py](views_hotplug.py) - one window per output that follows
+  outputs being switched on and off (Display.AddObserver)
 - [screenshot.py](screenshot.py) - Example of off-screen rendering mode
   to create a screenshot of a web page. The code from this example is
   discussed in great details in Tutorial in the [Off-screen rendering](../docs/Tutorial.md#off-screen-rendering)
