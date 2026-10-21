@@ -83,6 +83,14 @@ with that. For other compositors match on [GetBounds](#getbounds) (the
 positions that `wlr-randr`/`kscreen-doctor` print).
 
 
+## Hot-plug timing
+
+Chromium learns of a new output asynchronously (the `wl_output` global is announced, bound and described by the compositor, then the
+display list is updated), so right after an output is switched on `GetAllDisplays()` and `FindByOutputName()` may not list it yet,
+even if the application's own toolkit already knows it. A window made at that moment with `SetFullscreenOnDisplay(...)` for an id
+looked up too early, or with `SetFullscreen(True)`, goes fullscreen on another output. Wait until `FindByOutputName(name)` returns the
+display before using it (there is no display-added callback in CEF yet).
+
 ## Methods
 
 

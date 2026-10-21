@@ -293,7 +293,7 @@ Wayland this is `xdg_toplevel.set_fullscreen(wl_output)`, so no compositor
 specific key binding or window rule is needed. May be called before `Show()`
 (for example in `OnWindowCreated`). Display ids change when an output is
 unplugged and plugged back: look the display up again (`Display.FindByOutputName`)
-after a hot-plug. On X11, which cannot choose the display, and for an invalid
+after a hot-plug, and only once it is listed (see "Hot-plug timing" in [Display](Display.md)). On X11, which cannot choose the display, and for an invalid
 id it behaves like `SetFullscreen(True)`.
 
 Requires a CEF build with the `CefWindow::SetFullscreenOnDisplay` patch
