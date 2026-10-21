@@ -110,8 +110,7 @@ for _ in range(100):
 cef.Shutdown()
 ```
 
-A complete, runnable version is `tools/cef-wayland-tests/views_open.py` of the
-UniTotem repository.
+A complete, runnable version is [examples/views.py](../examples/views.py).
 
 Notes:
 * A frameless window on Wayland has no decorations (CEF asks the compositor for
@@ -298,8 +297,7 @@ after a hot-plug. On X11, which cannot choose the display, and for an invalid
 id it behaves like `SetFullscreen(True)`.
 
 Requires a CEF build with the `CefWindow::SetFullscreenOnDisplay` patch
-(`tools/cef-server/patches` of the UniTotem repository; the experimental API
-of the same name in upstream CEF once merged).
+(an experimental API of CEF, proposed upstream).
 
 
 ### IsMaximized

@@ -137,4 +137,4 @@ Degrees.
 
 User-friendly label given by the platform, possibly empty. On Wayland it is the
 `wl_output` description. Requires a CEF build with `CefDisplay::GetLabel`
-(`tools/cef-server/patches` of the UniTotem repository).
+(an experimental API of CEF, proposed upstream).
