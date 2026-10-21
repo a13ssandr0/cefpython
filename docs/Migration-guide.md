@@ -53,6 +53,7 @@ Table of contents:
 * [v66.1+ Navigation urls passed to CreateBrowserSync or LoadUrl methods need to be encoded by app code](#v661-navigation-urls-passed-to-createbrowsersync-or-loadurl-methods-need-to-be-encoded-by-app-code)
 * [v67+ Do not call the 'WindowUtils.OnSize' function](#v67-do-not-call-the-windowutilsonsize-function)
 * [v147+ Removed and changed APIs](#v147-removed-and-changed-apis)
+* [v147+ Wayland: Views windows, Ozone backend selection](#v147-wayland-views-windows-ozone-backend-selection)
 
 
 ## v49+ Distribution packages
@@ -557,3 +558,31 @@ Passing a removed setting raises an "Invalid appSettings key" or
 | `plugins_disabled` | Browser | Removed. |
 | `universal_access_from_file_urls_allowed` | Browser | Removed. |
 | `web_security_disabled` | Browser | Removed. |
+
+The following application settings were also removed:
+`accept_language_list`, `ignore_certificate_errors`, and `user_data_path`.
+The following browser settings were removed: `accept_language_list`,
+`file_access_from_file_urls_allowed`, `plugins_disabled`,
+`universal_access_from_file_urls_allowed`, and `web_security_disabled`.
+
+
+## v147+ Wayland: Views windows, Ozone backend selection
+
+* **Backend selection.** `cef.Initialize()` used to force `ozone-platform=x11`
+  (and `cefpython3/__init__.py` `GDK_BACKEND=x11`) on every Linux system.
+  Now the Wayland backend is selected automatically in a session that has a
+  Wayland compositor and no X server (`WAYLAND_DISPLAY` set, `DISPLAY` unset);
+  everywhere else, in particular on a desktop that runs XWayland (both
+  variables set), X11 stays the default, so existing code is not affected. Pass
+  the `ozone-platform` switch (`x11`, `wayland`, `auto`) to `Initialize()` to
+  choose explicitly.
+* **No embedding on Wayland.** `WindowInfo.SetAsChild(handle)` needs an X11
+  window id and only works on the X11 backend. A native Wayland application
+  opens the browser in a window of its own with the new Views API:
+  [Window](../api/Window.md), [BrowserView](../api/BrowserView.md),
+  [WindowDelegate](../api/WindowDelegate.md), [Display](../api/Display.md)
+  (frameless, fullscreen on a chosen output, `app_id`, real close).
+* **`CreateBrowserSync()` without a parent window on Wayland** now opens such a
+  Views window (framed, 800x600) and closing the browser closes the window;
+  before, CEF's native window could not be destroyed on Wayland. See
+  [Window](../api/Window.md#createbrowsersync-on-wayland).

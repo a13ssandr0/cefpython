@@ -76,6 +76,12 @@ webpage you will have to implement
 LoadHandler.[OnLoadingStateChange](LoadHandler.md#onloadingstatechange)
 callback.
 
+On Wayland (see the `ozone-platform` switch in
+[CommandLineSwitches](CommandLineSwitches.md)) a `window_info` without a
+parent window makes the browser open in a CEF Views window of its own, see
+[Window](Window.md#createbrowsersync-on-wayland); to control the window use
+[Window](Window.md) and [BrowserView](BrowserView.md) instead.
+
 
 ### ExceptHook
 

@@ -18,9 +18,11 @@
 ### Classes and objects
 
  * [Browser](Browser.md#browser-object) object
+ * [BrowserView](BrowserView.md#browserview-object) object (Views)
  * [Callback](Callback.md#callback-object) object
  * [Cookie](Cookie.md#cookie-class) class
  * [CookieManager](CookieManager.md#cookiemanager-class) class
+ * [Display](Display.md#display-object) object (Views)
  * [DpiAware](DpiAware.md#dpiaware-class) class (Win)
  * [DragData](DragData.md#dragdata-object) object
  * [Frame](Frame.md#frame-object) object
@@ -30,7 +32,9 @@
  * [PaintBuffer](PaintBuffer.md#paintbuffer-object) object
  * [Request](Request.md#request-class) class
  * [Response](Response.md#response-object) object
+ * [View](View.md#view-object) object (Views), [Panel](View.md#panel-object)
  * [WebRequest](WebRequest.md#webrequest-class) class
+ * [Window](Window.md#window-object) object (Views)
  * [WindowInfo](WindowInfo.md#windowinfo-class) class
  * [WindowUtils](WindowUtils.md#windowutils-class) class
 
@@ -55,5 +59,6 @@
 
  * [CookieVisitor](CookieVisitor.md#cookievisitor-interface) interface
  * [StringVisitor](StringVisitor.md#stringvisitor-interface) interface
+ * [WindowDelegate](WindowDelegate.md#windowdelegate-interface) interface (Views)
  * [WebRequestClient](WebRequestClient.md#webrequestclient-interface) interface
 

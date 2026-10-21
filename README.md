@@ -187,9 +187,11 @@ at this moment.
 #### Classes and objects
 
  * [Browser](api/Browser.md#browser-object) object
+ * [BrowserView](api/BrowserView.md#browserview-object) object (Views)
  * [Callback](api/Callback.md#callback-object) object
  * [Cookie](api/Cookie.md#cookie-class) class
  * [CookieManager](api/CookieManager.md#cookiemanager-class) class
+ * [Display](api/Display.md#display-object) object (Views)
  * [DpiAware](api/DpiAware.md#dpiaware-class) class (Win)
  * [DragData](api/DragData.md#dragdata-object) object
  * [Frame](api/Frame.md#frame-object) object
@@ -199,7 +201,9 @@ at this moment.
  * [PaintBuffer](api/PaintBuffer.md#paintbuffer-object) object
  * [Request](api/Request.md#request-class) class
  * [Response](api/Response.md#response-object) object
+ * [View](api/View.md#view-object) object (Views), [Panel](api/View.md#panel-object)
  * [WebRequest](api/WebRequest.md#webrequest-class) class
+ * [Window](api/Window.md#window-object) object (Views)
  * [WindowInfo](api/WindowInfo.md#windowinfo-class) class
  * [WindowUtils](api/WindowUtils.md#windowutils-class) class
 
@@ -224,6 +228,7 @@ at this moment.
 
  * [CookieVisitor](api/CookieVisitor.md#cookievisitor-interface) interface
  * [StringVisitor](api/StringVisitor.md#stringvisitor-interface) interface
+ * [WindowDelegate](api/WindowDelegate.md#windowdelegate-interface) interface (Views)
  * [WebRequestClient](api/WebRequestClient.md#webrequestclient-interface) interface
 
 
@@ -350,6 +355,11 @@ at this moment.
   * [user_style_sheet_location](api/BrowserSettings.md#user_style_sheet_location)
   * [webgl_disabled](api/BrowserSettings.md#webgl_disabled)
   * [windowless_frame_rate](api/BrowserSettings.md#windowless_frame_rate)
+* [BrowserView (object)](api/BrowserView.md#browserview-object)
+  * [CreateBrowserView](api/BrowserView.md#createbrowserview)
+  * [GetBrowser](api/BrowserView.md#getbrowser)
+  * [SetPreferAccelerators](api/BrowserView.md#setpreferaccelerators)
+  * [GetRuntimeStyle](api/BrowserView.md#getruntimestyle)
 * [Callback (object)](api/Callback.md#callback-object)
   * [Continue](api/Callback.md#continue)
   * [Cancel](api/Callback.md#cancel)
@@ -382,6 +392,7 @@ at this moment.
   * [proxy-server](api/CommandLineSwitches.md#proxy-server)
   * [no-proxy-server](api/CommandLineSwitches.md#no-proxy-server)
   * [disable-gpu](api/CommandLineSwitches.md#disable-gpu)
+  * [ozone-platform](api/CommandLineSwitches.md#ozone-platform)
 * [Cookie (class)](api/Cookie.md#cookie-class)
   * [Set](api/Cookie.md#set)
   * [Get](api/Cookie.md#get)
@@ -414,6 +425,21 @@ at this moment.
   * [FlushStore](api/CookieManager.md#flushstore)
 * [CookieVisitor (interface)](api/CookieVisitor.md#cookievisitor-interface)
   * [Visit](api/CookieVisitor.md#visit)
+* [Display (object)](api/Display.md#display-object)
+  * [GetPrimaryDisplay](api/Display.md#getprimarydisplay)
+  * [GetDisplayNearestPoint](api/Display.md#getdisplaynearestpoint)
+  * [GetDisplayMatchingBounds](api/Display.md#getdisplaymatchingbounds)
+  * [GetDisplayCount](api/Display.md#getdisplaycount)
+  * [GetAllDisplays](api/Display.md#getalldisplays)
+  * [FindByOutputName](api/Display.md#findbyoutputname)
+  * [AddObserver](api/Display.md#addobserver)
+  * [RemoveObserver](api/Display.md#removeobserver)
+  * [GetID](api/Display.md#getid)
+  * [GetDeviceScaleFactor](api/Display.md#getdevicescalefactor)
+  * [GetBounds](api/Display.md#getbounds)
+  * [GetWorkArea](api/Display.md#getworkarea)
+  * [GetRotation](api/Display.md#getrotation)
+  * [GetLabel](api/Display.md#getlabel)
 * [DisplayHandler (interface)](api/DisplayHandler.md#displayhandler-interface)
   * [OnAddressChange](api/DisplayHandler.md#onaddresschange)
   * [OnAutoResize](api/DisplayHandler.md#onautoresize)
@@ -621,6 +647,7 @@ at this moment.
 * [V8ContextHandler (interface)](api/V8ContextHandler.md#v8contexthandler-interface)
   * [OnContextCreated](api/V8ContextHandler.md#oncontextcreated)
   * [OnContextReleased](api/V8ContextHandler.md#oncontextreleased)
+* [View (object)](api/View.md#view-object)
 * [Virtual Key codes](api/VirtualKey.md#virtual-key-codes)
 * [WebRequest (class)](api/WebRequest.md#webrequest-class)
   * [Create](api/WebRequest.md#create)
@@ -634,6 +661,36 @@ at this moment.
   * [OnDownloadProgress](api/WebRequestClient.md#ondownloadprogress)
   * [OnDownloadData](api/WebRequestClient.md#ondownloaddata)
   * [OnRequestComplete](api/WebRequestClient.md#onrequestcomplete)
+* [Window (object)](api/Window.md#window-object)
+  * [CreateTopLevelWindow](api/Window.md#createtoplevelwindow)
+  * [Show](api/Window.md#show)
+  * [Hide](api/Window.md#hide)
+  * [Close](api/Window.md#close)
+  * [IsClosed](api/Window.md#isclosed)
+  * [CenterWindow](api/Window.md#centerwindow)
+  * [Activate](api/Window.md#activate)
+  * [Deactivate](api/Window.md#deactivate)
+  * [IsActive](api/Window.md#isactive)
+  * [BringToTop](api/Window.md#bringtotop)
+  * [SetAlwaysOnTop](api/Window.md#setalwaysontop)
+  * [IsAlwaysOnTop](api/Window.md#isalwaysontop)
+  * [Maximize](api/Window.md#maximize)
+  * [Minimize](api/Window.md#minimize)
+  * [Restore](api/Window.md#restore)
+  * [SetFullscreen](api/Window.md#setfullscreen)
+  * [SetFullscreenOnDisplay](api/Window.md#setfullscreenondisplay)
+  * [IsMaximized](api/Window.md#ismaximized)
+  * [IsMinimized](api/Window.md#isminimized)
+  * [IsFullscreen](api/Window.md#isfullscreen)
+  * [SetTitle](api/Window.md#settitle)
+  * [GetTitle](api/Window.md#gettitle)
+  * [GetDisplay](api/Window.md#getdisplay)
+  * [GetClientAreaBoundsInScreen](api/Window.md#getclientareaboundsinscreen)
+  * [GetWindowHandle](api/Window.md#getwindowhandle)
+  * [GetRuntimeStyle](api/Window.md#getruntimestyle)
+  * [SetUserData](api/Window.md#setuserdata)
+  * [GetUserData](api/Window.md#getuserdata)
+* [WindowDelegate (interface)](api/WindowDelegate.md#windowdelegate-interface)
 * [WindowInfo (class)](api/WindowInfo.md#windowinfo-class)
   * [SetAsChild](api/WindowInfo.md#setaschild)
   * [SetAsPopup](api/WindowInfo.md#setaspopup)
