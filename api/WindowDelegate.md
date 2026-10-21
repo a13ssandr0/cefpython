@@ -29,7 +29,7 @@ Table of contents:
 | `IsWindowModalDialog(window)` | bool | False. |
 | `GetInitialBounds(window)` | list [x, y, width, height] | 800x600; a Wayland compositor places the window. |
 | `GetInitialShowState(window)` | `SHOW_STATE_*` | `SHOW_STATE_NORMAL`. |
-| `IsFrameless(window)` | bool | False. True: no decorations (on Wayland the compositor is asked for client-side decorations only). |
+| `IsFrameless(window)` | bool | False. True: no decorations (on Wayland, with the CEF frameless patch, client-side decorations are requested). |
 | `WithStandardWindowButtons(window)` | bool | Not frameless. |
 | `CanResize(window)`, `CanMaximize(window)`, `CanMinimize(window)` | bool | True. |
 | `CanClose(window)` | bool | The browsers inside are asked to close (`TryCloseBrowser`), the window closes once they are done. |

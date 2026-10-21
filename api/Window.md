@@ -113,8 +113,9 @@ cef.Shutdown()
 A complete, runnable version is [examples/views.py](../examples/views.py).
 
 Notes:
-* A frameless window on Wayland has no decorations (CEF asks the compositor for
-  client-side decorations only, see `IsFrameless`).
+* With the CEF patch for frameless Wayland windows (`remove_standard_frame`), a frameless window
+  asks the compositor for client-side decorations only (see `IsFrameless`); without it the
+  compositor may draw its own title bar.
 * Until the window is shown nothing exists in the compositor.
 * The delegate object is optional, as is every one of its methods: CEF's
   defaults are used for what is missing. The Alloy runtime style is
@@ -167,7 +168,7 @@ Shows the window and activates it.
 | --- | --- |
 | __Return__ | void |
 
-Hides the window (on Wayland the toplevel is unmapped).
+Hides the window.
 
 
 ### Close
@@ -197,8 +198,8 @@ unload handlers run) and the window closes when they are done. Then:
 | size | list [width, height] |
 | __Return__ | void |
 
-Sizes the window and centers it on the screen. Has no effect where the
-compositor places windows (Wayland).
+Sizes the window and centers it on the screen where the platform lets
+applications place windows (a Wayland compositor decides itself).
 
 
 ### Activate
