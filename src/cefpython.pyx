@@ -730,41 +730,6 @@ def CreateBrowserSync(windowInfo=None,
 
     Debug("CreateBrowserSync() called")
 
-    """
-    # CEF views
-    # noinspection PyUnresolvedReferences
-    cdef CefRefPtr[CefWindow] cef_window
-    # noinspection PyUnresolvedReferences
-    cdef CefRefPtr[CefBoxLayout] cef_box_layout
-    cdef CefBoxLayoutSettings cef_box_layout_settings
-    cdef CefRefPtr[CefPanel] cef_panel
-    if not windowInfo and browserSettings \
-            and "window_title" in browserSettings:
-        # noinspection PyUnresolvedReferences
-        cef_window = CefWindow.CreateTopLevelWindow(
-                <CefRefPtr[CefWindowDelegate]?>NULL)
-        Debug("CefWindow.GetChildViewCount = "
-              +str(cef_window.get().GetChildViewCount()))
-
-        cef_window.get().CenterWindow(CefSize(800, 600))
-        cef_window.get().SetBounds(CefRect(0, 0, 800, 600))
-        # noinspection PyUnresolvedReferences
-        #cef_box_layout = cef_window.get().SetToBoxLayout(
-        #        cef_box_layout_settings)
-        #cef_box_layout.get().SetFlexForView(cef_window, 1)
-        cef_window.get().SetToFillLayout()
-        # noinspection PyUnresolvedReferences
-        cef_panel = CefPanel.CreatePanel(<CefRefPtr[CefPanelDelegate]?>NULL)
-        cef_window.get().AddChildView(cef_panel)
-        cef_window.get().Layout()
-        cef_window.get().SetVisible(True)
-        cef_window.get().Show()
-        cef_window.get().RequestFocus()
-        windowInfo = WindowInfo()
-        windowInfo.SetAsChild(cef_window.get().GetWindowHandle())
-        Debug("CefWindow handle = "
-              +str(<uintptr_t>cef_window.get().GetWindowHandle()))
-    """
 
     # Only title was set in hello_world.py example
     if windowInfo and not windowInfo.windowType:
@@ -867,13 +832,6 @@ def CreateBrowserSync(windowInfo=None,
     pyBrowser.SetUserData("__outerWindowHandle",
                           int(windowInfo.parentWindowHandle))
 
-    """
-    if cef_window.get():
-        cef_window.get().ReorderChildView(cef_panel, -1)
-        cef_window.get().Layout()
-        cef_window.get().Show()
-        cef_window.get().RequestFocus()
-    """
 
     if windowInfo.parentWindowHandle == 0\
             and windowInfo.windowType == "child"\

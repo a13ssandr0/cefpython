@@ -179,9 +179,9 @@ Hides the window (on Wayland the toplevel is unmapped).
 
 Closes the window. `WindowDelegate.CanClose()` is asked first; when it is not
 implemented the browsers inside are asked to close (their `beforeunload` and
-unload handlers run) and the window closes when they are done. Then, in this
-order: `OnBeforeClose` of the browsers, `OnWindowClosing`, the native window is
-destroyed, `OnWindowDestroyed`. After that the object cannot be used any more.
+unload handlers run) and the window closes when they are done. Then:
+`BrowserViewDelegate.OnBrowserDestroyed`, `OnBeforeClose` of the browser,
+`OnWindowClosing`, `OnWindowDestroyed` (the native window is gone). After that the object cannot be used any more.
 
 
 ### IsClosed
@@ -292,8 +292,10 @@ Enters fullscreen on the [Display](Display.md) with this id
 (`Display.GetID()`), and moves a window that is already fullscreen to it. On
 Wayland this is `xdg_toplevel.set_fullscreen(wl_output)`, so no compositor
 specific key binding or window rule is needed. May be called before `Show()`
-(for example in `OnWindowCreated`). An unknown id behaves like
-`SetFullscreen(True)`.
+(for example in `OnWindowCreated`). Display ids change when an output is
+unplugged and plugged back: look the display up again (`Display.FindByOutputName`)
+after a hot-plug. On X11, which cannot choose the display, and for an invalid
+id it behaves like `SetFullscreen(True)`.
 
 Requires a CEF build with the `CefWindow::SetFullscreenOnDisplay` patch
 (`tools/cef-server/patches` of the UniTotem repository; the experimental API
@@ -345,7 +347,10 @@ The title of the toplevel (`xdg_toplevel.set_title`).
 | __Return__ | [Display](Display.md) |
 
 The display the window is on (on Wayland: the output the compositor entered
-the surface on, known after the window was shown).
+the surface on, known after the window was shown; a Wayland client does not
+know the position of its window, so with a CEF build without the `GetDisplay`
+patch this was matched by window bounds and wrong for any output but the
+first).
 
 
 ### GetClientAreaBoundsInScreen

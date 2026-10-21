@@ -69,5 +69,5 @@ An object with these optional methods, passed as `delegate`:
 | Method | Description |
 | --- | --- |
 | `OnBrowserCreated(browser_view, browser)` | The browser exists. Install the [client handlers](Browser.md#setclienthandler) here, the page has not started loading yet. |
-| `OnBrowserDestroyed(browser_view, browser)` | After `OnBeforeClose`. Close the window here when it has nothing else to show. |
+| `OnBrowserDestroyed(browser_view, browser)` | Just before `OnBeforeClose`. Close the window here when it has nothing else to show. |
 | `GetBrowserRuntimeStyle()` | One of `RUNTIME_STYLE_*`. The default is `RUNTIME_STYLE_ALLOY`. |
