@@ -209,6 +209,8 @@
   * [GetDisplayCount](Display.md#getdisplaycount)
   * [GetAllDisplays](Display.md#getalldisplays)
   * [FindByOutputName](Display.md#findbyoutputname)
+  * [AddObserver](Display.md#addobserver)
+  * [RemoveObserver](Display.md#removeobserver)
   * [GetID](Display.md#getid)
   * [GetDeviceScaleFactor](Display.md#getdevicescalefactor)
   * [GetBounds](Display.md#getbounds)

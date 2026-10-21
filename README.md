@@ -440,6 +440,8 @@ at this moment.
   * [GetDisplayCount](api/Display.md#getdisplaycount)
   * [GetAllDisplays](api/Display.md#getalldisplays)
   * [FindByOutputName](api/Display.md#findbyoutputname)
+  * [AddObserver](api/Display.md#addobserver)
+  * [RemoveObserver](api/Display.md#removeobserver)
   * [GetID](api/Display.md#getid)
   * [GetDeviceScaleFactor](api/Display.md#getdevicescalefactor)
   * [GetBounds](api/Display.md#getbounds)

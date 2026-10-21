@@ -62,6 +62,14 @@ class ViewsTest_IsolatedTest(unittest.TestCase):
         self.assertIsNone(cef.Display.FindByOutputName("no-such-output"))
         subtest_message("Display ok")
 
+        observer = DisplayObserver()
+        cef.Display.AddObserver(observer)
+        cef.Display.AddObserver(observer)  # ignored
+        cef.Display.RemoveObserver(observer)
+        cef.Display.RemoveObserver(observer)  # ignored
+        cef.Display.AddObserver(observer)  # kept until Shutdown
+        subtest_message("Display.AddObserver ok")
+
         # Window with delegates
         delegate = WindowDelegate()
         view_delegate = BrowserViewDelegate()
@@ -108,6 +116,15 @@ class ViewsTest_IsolatedTest(unittest.TestCase):
         subtest_message("cef.Shutdown() ok")
         show_test_summary(__file__)
         sys.stdout.flush()
+
+
+class DisplayObserver(object):
+    """Display changes cannot be provoked here: only the registration is
+    tested. The hot-plug callbacks are tested by hand, see
+    examples/views_hotplug.py."""
+
+    def OnDisplayAdded(self, display):
+        g_events.append("OnDisplayAdded")
 
 
 class WindowDelegate(object):

@@ -4,8 +4,31 @@
 
 include "cefpython.pyx"
 
+from cpython.ref cimport PyObject
+from views_delegate cimport ViewsDisplayObserver
+
 # Wrapper of CefDisplay (include/views/cef_display.h): one monitor as seen by
 # Chromium. Obtain instances with the static methods or Window.GetDisplay().
+
+# Registered observers: [(python object, C++ observer)]. The C++ side keeps
+# the Python object alive; this list lets RemoveObserver() find the C++ one.
+cdef list g_displayObservers = []
+
+cdef class DisplayObserverHandle:
+    cdef object pyObserver
+    cdef CefRefPtr[CefDisplayObserver] cefObserver
+
+cdef public void DisplayObserver_OnEvent(
+        object observer, const char* name,
+        CefRefPtr[CefDisplay] cefDisplay) noexcept with gil:
+    # OnDisplayAdded, OnDisplayRemoved, OnDisplayMetricsChanged
+    try:
+        method = getattr(observer, CharToPyString(name), None)
+        if method is not None:
+            method(DisplayWrap(cefDisplay))
+    except:
+        (exc_type, exc_value, exc_trace) = sys.exc_info()
+        sys.excepthook(exc_type, exc_value, exc_trace)
 
 cdef Display DisplayWrap(CefRefPtr[CefDisplay] cefDisplay):
     if not cefDisplay.get():
@@ -46,6 +69,33 @@ cdef class Display:
         cdef size_t i
         CefDisplay.GetAllDisplays(cefDisplays)
         return [DisplayWrap(cefDisplays[i]) for i in range(cefDisplays.size())]
+
+    @staticmethod
+    def AddObserver(observer):
+        """Notify |observer| (an object with the optional methods
+        OnDisplayAdded(display), OnDisplayRemoved(display) and
+        OnDisplayMetricsChanged(display)) of changes to the displays. The
+        observer is kept alive until RemoveObserver(). Adding an observer
+        that is registered already has no effect."""
+        cdef DisplayObserverHandle handle
+        for handle in g_displayObservers:
+            if handle.pyObserver is observer:
+                return
+        handle = DisplayObserverHandle()
+        handle.pyObserver = observer
+        handle.cefObserver = CefRefPtr[CefDisplayObserver](
+                new ViewsDisplayObserver(<PyObject*>observer))
+        CefDisplay.AddObserver(handle.cefObserver)
+        g_displayObservers.append(handle)
+
+    @staticmethod
+    def RemoveObserver(observer):
+        cdef DisplayObserverHandle handle
+        for handle in g_displayObservers:
+            if handle.pyObserver is observer:
+                CefDisplay.RemoveObserver(handle.cefObserver)
+                g_displayObservers.remove(handle)
+                return
 
     def GetID(self):
         return int(self.cefDisplay.get().GetID())

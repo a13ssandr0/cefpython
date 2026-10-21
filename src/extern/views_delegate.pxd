@@ -3,7 +3,7 @@
 # Project website: https://github.com/cztomczak/cefpython
 
 from cpython.ref cimport PyObject
-from cef_views cimport CefWindowDelegate, CefBrowserViewDelegate
+from cef_views cimport CefWindowDelegate, CefBrowserViewDelegate, CefDisplayObserver
 
 cdef extern from "client_handler/views_delegate.h":
 
@@ -12,3 +12,6 @@ cdef extern from "client_handler/views_delegate.h":
 
     cdef cppclass ViewsBrowserViewDelegate(CefBrowserViewDelegate):
         ViewsBrowserViewDelegate(PyObject* pyDelegate)
+
+    cdef cppclass ViewsDisplayObserver(CefDisplayObserver):
+        ViewsDisplayObserver(PyObject* pyObserver)

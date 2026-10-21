@@ -55,6 +55,10 @@ cdef extern from "include/views/cef_display.h":
         CefRect GetWorkArea()
         int GetRotation()
         CefString GetLabel()
+        @staticmethod
+        void AddObserver(CefRefPtr[CefDisplayObserver] observer)
+        @staticmethod
+        void RemoveObserver(CefRefPtr[CefDisplayObserver] observer)
 
 cdef extern from "include/views/cef_view.h":
     cdef cppclass CefView:
@@ -95,6 +99,10 @@ cdef extern from "include/views/cef_view.h":
         cef_color_t GetBackgroundColor()
         cpp_bool ConvertPointToScreen(CefPoint& point)
         cpp_bool ConvertPointFromScreen(CefPoint& point)
+
+cdef extern from "include/views/cef_display_observer.h":
+    cdef cppclass CefDisplayObserver:
+        pass
 
 cdef extern from "include/views/cef_fill_layout.h":
     cdef cppclass CefFillLayout:

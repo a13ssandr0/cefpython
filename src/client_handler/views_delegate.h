@@ -12,6 +12,7 @@
 #include "common/cefpython_public_api.h"
 #include "include/views/cef_browser_view.h"
 #include "include/views/cef_browser_view_delegate.h"
+#include "include/views/cef_display_observer.h"
 #include "include/views/cef_window.h"
 #include "include/views/cef_window_delegate.h"
 
@@ -104,4 +105,21 @@ private:
 
     IMPLEMENT_REFCOUNTING(ViewsBrowserViewDelegate);
     DISALLOW_COPY_AND_ASSIGN(ViewsBrowserViewDelegate);
+};
+
+
+class ViewsDisplayObserver : public CefDisplayObserver
+{
+public:
+    explicit ViewsDisplayObserver(PyObject* pyObserver);
+
+    void OnDisplayAdded(CefRefPtr<CefDisplay> display) override;
+    void OnDisplayRemoved(CefRefPtr<CefDisplay> display) override;
+    void OnDisplayMetricsChanged(CefRefPtr<CefDisplay> display) override;
+
+private:
+    PyObjectRef py_;
+
+    IMPLEMENT_REFCOUNTING(ViewsDisplayObserver);
+    DISALLOW_COPY_AND_ASSIGN(ViewsDisplayObserver);
 };

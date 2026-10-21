@@ -318,3 +318,29 @@ cef_runtime_style_t ViewsBrowserViewDelegate::GetBrowserRuntimeStyle()
     BrowserViewDelegate_GetRuntimeStyle(py_.get(), &style);
     return static_cast<cef_runtime_style_t>(style);
 }
+
+
+// ----------------------------------------------------------------------------
+// ViewsDisplayObserver
+// ----------------------------------------------------------------------------
+
+ViewsDisplayObserver::ViewsDisplayObserver(PyObject* pyObserver)
+    : py_(pyObserver)
+{
+}
+
+void ViewsDisplayObserver::OnDisplayAdded(CefRefPtr<CefDisplay> display)
+{
+    DisplayObserver_OnEvent(py_.get(), "OnDisplayAdded", display);
+}
+
+void ViewsDisplayObserver::OnDisplayRemoved(CefRefPtr<CefDisplay> display)
+{
+    DisplayObserver_OnEvent(py_.get(), "OnDisplayRemoved", display);
+}
+
+void ViewsDisplayObserver::OnDisplayMetricsChanged(
+        CefRefPtr<CefDisplay> display)
+{
+    DisplayObserver_OnEvent(py_.get(), "OnDisplayMetricsChanged", display);
+}

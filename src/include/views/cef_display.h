@@ -43,6 +43,10 @@
 #include "include/cef_api_hash.h"
 #include "include/cef_base.h"
 
+#if CEF_API_ADDED(CEF_EXPERIMENTAL)
+class CefDisplayObserver;
+#endif
+
 ///
 /// This class typically, but not always, corresponds to a physical display
 /// connected to the system. A fake Display may exist on a headless system, or a
@@ -94,6 +98,22 @@ class CefDisplay : public CefBaseRefCounted {
   ///
   /*--cef(count_func=displays:GetDisplayCount)--*/
   static void GetAllDisplays(std::vector<CefRefPtr<CefDisplay>>& displays);
+
+#if CEF_API_ADDED(CEF_EXPERIMENTAL)
+  ///
+  /// Register |observer| to be notified of display changes. Adding an observer
+  /// that is already registered has no effect. The observer is kept alive until
+  /// RemoveObserver is called. Must be called on the browser process UI thread.
+  ///
+  /*--cef(added=experimental)--*/
+  static void AddObserver(CefRefPtr<CefDisplayObserver> observer);
+
+  ///
+  /// Unregister an observer that was registered with AddObserver.
+  ///
+  /*--cef(added=experimental)--*/
+  static void RemoveObserver(CefRefPtr<CefDisplayObserver> observer);
+#endif
 
   ///
   /// Convert |point| from DIP screen coordinates to pixel screen coordinates.
