@@ -19,6 +19,9 @@
 #include "include/cef_client.h"
 #include "include/cef_urlrequest.h"
 #include "include/cef_command_line.h"
+#include "include/views/cef_browser_view.h"
+#include "include/views/cef_display_observer.h"
+#include "include/views/cef_window.h"
 #include "util.h"
 
 // The generated header uses DL_IMPORT/DL_EXPORT which were removed in Python 3.

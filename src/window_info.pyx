@@ -146,8 +146,11 @@ cdef class WindowInfo:
             if parentWindowHandle == 0 and "WAYLAND_DISPLAY" in os.environ:
                 NonCriticalError("WindowInfo.SetAsChild: parentWindowHandle is 0"
                                  " in a Wayland session, CEF will open a"
-                                 " detached window. Run the GUI toolkit under"
-                                 " X11/XWayland, see examples/qt.py")
+                                 " window of its own. Embedding needs an X11"
+                                 " window id: run the GUI toolkit under"
+                                 " X11/XWayland, see examples/qt.py. A native"
+                                 " Wayland application opens the browser with"
+                                 " cef.Window and cef.BrowserView (CEF Views)")
         self.parentWindowHandle = parentWindowHandle
         IF UNAME_SYSNAME == "Darwin" or UNAME_SYSNAME == "Linux":
             if not windowRect:
