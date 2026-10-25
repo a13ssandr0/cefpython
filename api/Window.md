@@ -289,13 +289,14 @@ Enters or leaves fullscreen. The compositor chooses the output (on Wayland:
 | __Return__ | void |
 
 Enters fullscreen on the [Display](Display.md) with this id
-(`Display.GetID()`), and moves a window that is already fullscreen to it. On
-Wayland this is `xdg_toplevel.set_fullscreen(wl_output)`, so no compositor
-specific key binding or window rule is needed. May be called before `Show()`
-(for example in `OnWindowCreated`). Display ids change when an output is
-unplugged and plugged back: look the display up again (`Display.FindByOutputName`)
-after a hot-plug, and only once it is listed (see "Hot-plug timing" in [Display](Display.md)). On X11, which cannot choose the display, and for an invalid
-id it behaves like `SetFullscreen(True)`.
+(`Display.GetID()`), and moves a window that is already fullscreen to it.
+**Only Wayland honours the display** (`xdg_toplevel.set_fullscreen(wl_output)`, so no
+compositor specific key binding or window rule is needed). On every other platform and
+Linux backend (Windows, macOS, X11) and for an invalid id it is exactly
+`SetFullscreen(True)`: nothing of this exists there. May be called before `Show()` (for
+example in `OnWindowCreated`). Display ids change when an output is unplugged and plugged
+back: look the display up again (`Display.FindByOutputName`) after a hot-plug, and only
+once it is listed (see "Hot-plug timing" in [Display](Display.md)).
 
 Requires a CEF build with the `CefWindow::SetFullscreenOnDisplay` patch
 (an experimental API of CEF, proposed upstream).
