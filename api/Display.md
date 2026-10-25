@@ -77,8 +77,9 @@ Mirrored displays are not counted.
 | __Return__ | [Display](Display.md) or None |
 
 The display of the output called `name` (the connector name: `"DP-1"`,
-`"HDMI-A-1"`, ...). Chromium's Display has no output name, only the label
-(see [GetLabel](#getlabel)): the compositors based on wlroots (labwc, sway,
+`"HDMI-A-1"`, ...). Wayland only: it returns None on every other platform and
+backend, where [GetLabel](#getlabel) is empty. Chromium's Display has no output
+name, only the label: the compositors based on wlroots (labwc, sway,
 river, cage, wayfire) end the `wl_output` description with the name in
 parentheses (`"Dell Inc. U2720Q ABC123 (DP-1)"`) and this function compares
 with that. For other compositors match on [GetBounds](#getbounds) (the
@@ -100,7 +101,9 @@ object with these optional methods, called on the UI thread with a [Display](Dis
 * `OnDisplayRemoved(display)`
 * `OnDisplayMetricsChanged(display)`: bounds, work area, scale factor, rotation, label ...
 
-The observer is kept alive until `RemoveObserver()`; adding the same object twice has no effect. Requires a CEF build with
+Only Wayland delivers notifications: on every other platform and Linux backend (Windows, macOS, X11)
+`AddObserver()` does nothing and the observer is never called. The observer is kept alive until `RemoveObserver()`; adding the
+same object twice has no effect. Requires a CEF build with
 `CefDisplay::AddObserver` (an experimental API of CEF, proposed upstream). A complete example is
 [examples/views_hotplug.py](../examples/views_hotplug.py).
 
@@ -175,6 +178,6 @@ Degrees.
 | --- | --- |
 | __Return__ | string |
 
-User-friendly label given by the platform, possibly empty. On Wayland it is the
-`wl_output` description. Requires a CEF build with `CefDisplay::GetLabel`
+Only implemented on Wayland, where it is the `wl_output` description. An empty string
+on every other platform and Linux backend (Windows, macOS, X11). Requires a CEF build with `CefDisplay::GetLabel`
 (an experimental API of CEF, proposed upstream).
